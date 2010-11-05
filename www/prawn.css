@@ -5,8 +5,13 @@
 
 body {
   font: Verdana, "Lucida Grande", "Lucida Sans", sans-serif;
+<<<<<<< HEAD
   background-color: #141414;
   color: #ffff66;    
+=======
+  background-color: #000000;
+  color: #ffffff;    
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
   margin-bottom: 1em;
 }    
 
@@ -18,7 +23,11 @@ h2 {
 }
 
 h2, h3 { 
+<<<<<<< HEAD
 	color: #ffccdd;
+=======
+	color: #00bb77;
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 }               
 
 h1 {
@@ -38,7 +47,11 @@ a:visited {
 }
 
 a:hover, a:active { 
+<<<<<<< HEAD
 	color: #ffffff;
+=======
+	color: #2299ff;
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 }
  
 a img {
@@ -46,6 +59,10 @@ a img {
 }
 
 #contents { 
+<<<<<<< HEAD
+=======
+  background-color: #101010;
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 	width: 740px;
   margin: 0 auto;
   border: 1px solid #fff;
@@ -53,6 +70,17 @@ a img {
   padding: 1em 1em 1em 3em;
 }    
 
+<<<<<<< HEAD
+=======
+#sidebar {
+  width: 180px;
+  float: right;
+  padding: 2em 2em 2em 0;
+  font-size: 1.2em;
+}
+
+
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 #screenshots { 
 	margin-top: 2em;
 	float: right;

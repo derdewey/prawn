@@ -1,5 +1,9 @@
 Prawn is copyrighted free software produced by Gregory Brown along with 
+<<<<<<< HEAD
 community contributions.
+=======
+community contributions.  See git log for authorship information.
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 
 Licensing terms follow (License of Ruby 1.8):
 

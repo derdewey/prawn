@@ -1,0 +1,4 @@
+.*.sw?
+nbproject
+pkg 
+.rvmrc

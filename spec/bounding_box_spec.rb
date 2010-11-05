@@ -9,8 +9,13 @@ describe "A bounding box" do
     @y      = 125
     @width  = 50
     @height = 75
+<<<<<<< HEAD
     @box = Prawn::Document::BoundingBox.new(nil, [@x,@y], :width  => @width,
                                                           :height => @height )
+=======
+    @box = Prawn::Document::BoundingBox.new(nil, nil, [@x,@y],
+      :width  => @width, :height => @height )
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
   end
 
   it "should have an anchor at (x, y - height)" do
@@ -80,6 +85,7 @@ describe "A bounding box" do
   it "should have an absolute top-right of [x+width,y]" do
     @box.absolute_top_right.should == [@x + @width, @y]
   end
+<<<<<<< HEAD
   
 
 end
@@ -91,6 +97,25 @@ describe "drawing bounding boxes" do
     margin_box = @pdf.bounds
 
     @pdf.bounding_box [100,500] do
+=======
+
+  it "should require width to be set" do
+    assert_raises(ArgumentError) do
+      Prawn::Document::BoundingBox.new(nil, nil, [100,100])
+    end
+  end
+
+end
+
+describe "drawing bounding boxes" do    
+  
+  before(:each) { create_pdf }   
+
+  it "should restore the margin box when bounding box exits" do
+    margin_box = @pdf.bounds
+
+    @pdf.bounding_box [100,500], :width => 100 do
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
       #nothing
     end
 
@@ -99,7 +124,10 @@ describe "drawing bounding boxes" do
   end
 
   it "should restore the parent bounding box when calls are nested" do
+<<<<<<< HEAD
     @pdf = Prawn::Document.new
+=======
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
     @pdf.bounding_box [100,500], :width => 300, :height => 300 do 
 
       @pdf.bounds.absolute_top.should  == 500 + @pdf.margin_box.absolute_bottom
@@ -116,5 +144,75 @@ describe "drawing bounding boxes" do
       @pdf.bounds.absolute_left.should == 100 + @pdf.margin_box.absolute_left
 
     end
+<<<<<<< HEAD
   end
 end
+=======
+  end   
+  
+  it "should calculate a height if none is specified" do 
+    @pdf.bounding_box([100, 500], :width => 100) do
+      @pdf.text "The rain in Spain falls mainly on the plains." 
+    end     
+    
+    @pdf.y.should.be.close 458.384, 0.001 
+  end
+
+  it "should keep track of the max height the box was stretched to" do
+    box = @pdf.bounding_box(@pdf.bounds.top_left, :width => 100) do
+      @pdf.move_down 100
+      @pdf.move_up 15
+    end
+
+    assert_equal 100, box.height
+  end
+  
+end
+
+describe "Indentation" do
+  before(:each) { create_pdf }
+
+  it "should temporarily shift the x coordinate and width" do
+    @pdf.bounding_box([100,100], :width => 200) do
+      @pdf.indent(20) do
+        @pdf.bounds.absolute_left.should == 120
+        @pdf.bounds.width.should == 180
+      end
+    end
+  end
+
+  it "should restore the x coordinate and width after block exits" do
+    @pdf.bounding_box([100,100], :width => 200) do
+      @pdf.indent(20) do
+        # no-op
+      end
+      @pdf.bounds.absolute_left.should == 100
+      @pdf.bounds.width.should == 200
+    end
+  end
+
+  it "should restore the x coordinate and width on error" do
+    @pdf.bounding_box([100,100], :width => 200) do
+      begin
+        @pdf.indent(20) { raise }
+      rescue
+        @pdf.bounds.absolute_left.should == 100
+        @pdf.bounds.width.should == 200
+      end
+    end
+  end
+
+end
+
+describe "A canvas" do
+  before(:each) { create_pdf }
+  
+  it "should use whatever the last set y position is" do
+    @pdf.canvas do
+      @pdf.bounding_box([100,500],:width => 200) { @pdf.move_down 50 }
+    end
+    @pdf.y.should == 450
+  end
+end      
+  
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db

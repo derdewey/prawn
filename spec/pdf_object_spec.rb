@@ -6,27 +6,39 @@ require File.join(File.expand_path(File.dirname(__FILE__)), "spec_helper")
 describe "PDF Object Serialization" do     
               
   it "should convert Ruby's nil to PDF null" do
-    Prawn::PdfObject(nil).should == "null"
+    Prawn::Core::PdfObject(nil).should == "null"
   end
   
   it "should convert Ruby booleans to PDF booleans" do
-    Prawn::PdfObject(true).should  == "true"
-    Prawn::PdfObject(false).should == "false"
+    Prawn::Core::PdfObject(true).should  == "true"
+    Prawn::Core::PdfObject(false).should == "false"
   end
                                           
   it "should convert a Ruby number to PDF number" do
-    Prawn::PdfObject(1).should == "1"
-    Prawn::PdfObject(1.214112421).should == "1.214112421" 
+    Prawn::Core::PdfObject(1).should == "1"
+    Prawn::Core::PdfObject(1.214112421).should == "1.214112421" 
+  end
+  
+<<<<<<< HEAD
+  it "should convert a Ruby string to PDF string when inside a content stream" do       
+    s = "I can has a string"
+    parse_pdf_object(Prawn::PdfObject(s, true)).should == s
+=======
+  it "should convert a Ruby time object to a PDF timestamp" do
+    t = Time.now
+    Prawn::Core::PdfObject(t).should == t.strftime("(D:%Y%m%d%H%M%S%z").chop.chop + "'00')"
   end
   
   it "should convert a Ruby string to PDF string when inside a content stream" do       
     s = "I can has a string"
-    parse_pdf_object(Prawn::PdfObject(s, true)).should == s
+    PDF::Inspector.parse(Prawn::Core::PdfObject(s, true)).should == s
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
   end                      
 
   it "should convert a Ruby string to a UTF-16 PDF string when outside a content stream" do       
     s = "I can has a string"
     s_utf16 = "\xFE\xFF" + s.unpack("U*").pack("n*")
+<<<<<<< HEAD
     parse_pdf_object(Prawn::PdfObject(s, false)).should == s_utf16
   end                      
   
@@ -39,13 +51,76 @@ describe "PDF Object Serialization" do
     s = 'I can \\)( has string'
     parse_pdf_object(Prawn::PdfObject(s, true)).should == s  
   end      
+=======
+    PDF::Inspector.parse(Prawn::Core::PdfObject(s, false)).should == s_utf16
+  end                      
+
+  it "should convert a Ruby string with characters outside the BMP to its " +
+     "UTF-16 representation with a BOM" do
+    # U+10192 ROMAN SEMUNCIA SIGN
+    semuncia = [65938].pack("U")
+    Prawn::Core::PdfObject(semuncia, false).upcase.should == "<FEFFD800DD92>"
+  end
+
+  it "should pass through bytes regardless of content stream status for ByteString" do
+    Prawn::Core::PdfObject(Prawn::Core::ByteString.new("\xDE\xAD\xBE\xEF")).upcase.
+      should == "<DEADBEEF>"
+  end
   
+  it "should escape parens when converting from Ruby string to PDF" do
+    s =  'I )(can has a string'      
+    PDF::Inspector.parse(Prawn::Core::PdfObject(s, true)).should == s
+  end               
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
+  
+  it "should handle ruby escaped parens when converting to PDF string" do
+    s = 'I can \\)( has string'
+    PDF::Inspector.parse(Prawn::Core::PdfObject(s, true)).should == s  
+  end      
+
+  it "should escape various strings correctly when converting a LiteralString" do
+    ls = Prawn::Core::LiteralString.new("abc")
+    Prawn::Core::PdfObject(ls).should == "(abc)"
+
+    ls = Prawn::Core::LiteralString.new("abc\x0Ade") # should escape \n
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C\x0Ade)"
+
+    ls = Prawn::Core::LiteralString.new("abc\x0Dde") # should escape \r
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C\x0Dde)"
+
+    ls = Prawn::Core::LiteralString.new("abc\x09de") # should escape \t
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C\x09de)"
+
+    ls = Prawn::Core::LiteralString.new("abc\x08de") # should escape \b
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C\x08de)"
+
+    ls = Prawn::Core::LiteralString.new("abc\x0Cde") # should escape \f
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C\x0Cde)"
+
+    ls = Prawn::Core::LiteralString.new("abc(de") # should escape \(
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C(de)"
+
+    ls = Prawn::Core::LiteralString.new("abc)de") # should escape \)
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C)de)"
+
+    ls = Prawn::Core::LiteralString.new("abc\x5Cde") # should escape \\
+    Prawn::Core::PdfObject(ls).should == "(abc\x5C\x5Cde)"
+    Prawn::Core::PdfObject(ls).size.should == 9
+  end
+
+  it "should escape strings correctly when converting a LiteralString that is not utf-8" do
+    data = "\x43\xaf\xc9\x7f\xef\xf\xe6\xa8\xcb\x5c\xaf\xd0"
+    ls = Prawn::Core::LiteralString.new(data)
+    Prawn::Core::PdfObject(ls).should == "(\x43\xaf\xc9\x7f\xef\xf\xe6\xa8\xcb\x5c\x5c\xaf\xd0)"
+  end
+
   it "should convert a Ruby symbol to PDF name" do
-    Prawn::PdfObject(:my_symbol).should == "/my_symbol"
-    Prawn::PdfObject(:"A;Name_With−Various***Characters?").should ==
-     "/A;Name_With−Various***Characters?"
+    Prawn::Core::PdfObject(:my_symbol).should == "/my_symbol"
+    Prawn::Core::PdfObject(:"A;Name_With-Various***Characters?").should ==
+     "/A;Name_With-Various***Characters?"
   end
  
+<<<<<<< HEAD
   it "should not convert a whitespace containing Ruby symbol to a PDF name" do
     lambda { Prawn::PdfObject(:"My Symbol With Spaces") }.
       should.raise(Prawn::Errors::FailedObjectConversion)
@@ -54,10 +129,26 @@ describe "PDF Object Serialization" do
   it "should convert a Ruby array to PDF Array when inside a content stream" do
     Prawn::PdfObject([1,2,3]).should == "[1 2 3]"
     parse_pdf_object(Prawn::PdfObject([[1,2],:foo,"Bar"], true)).should ==  
+=======
+  it "should convert a whitespace or delimiter containing Ruby symbol to a PDF name" do
+    Prawn::Core::PdfObject(:"my symbol").should == "/my#20symbol"
+    Prawn::Core::PdfObject(:"my#symbol").should == "/my#23symbol"
+    Prawn::Core::PdfObject(:"my/symbol").should == "/my#2Fsymbol"
+    Prawn::Core::PdfObject(:"my(symbol").should == "/my#28symbol"
+    Prawn::Core::PdfObject(:"my)symbol").should == "/my#29symbol"
+    Prawn::Core::PdfObject(:"my<symbol").should == "/my#3Csymbol"
+    Prawn::Core::PdfObject(:"my>symbol").should == "/my#3Esymbol"
+  end
+  
+  it "should convert a Ruby array to PDF Array when inside a content stream" do
+    Prawn::Core::PdfObject([1,2,3]).should == "[1 2 3]"
+    PDF::Inspector.parse(Prawn::Core::PdfObject([[1,2],:foo,"Bar"], true)).should ==  
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
       [[1,2],:foo, "Bar"]
   end  
 
   it "should convert a Ruby array to PDF Array when outside a content stream" do
+<<<<<<< HEAD
     Prawn::PdfObject([1,2,3]).should == "[1 2 3]"
     parse_pdf_object(Prawn::PdfObject([[1,2],:foo,"Bar"], false)).should ==  
       [[1,2],:foo, "\xFE\xFF\x00B\x00a\x00r"]
@@ -69,6 +160,20 @@ describe "PDF Object Serialization" do
                               :bang => {:a => "what", :b => [:you, :say] }}, true )     
 
     res = parse_pdf_object(dict)           
+=======
+    bar = "\xFE\xFF" + "Bar".unpack("U*").pack("n*")
+    Prawn::Core::PdfObject([1,2,3]).should == "[1 2 3]"
+    PDF::Inspector.parse(Prawn::Core::PdfObject([[1,2],:foo,"Bar"], false)).should ==  
+      [[1,2],:foo, bar]
+  end  
+ 
+  it "should convert a Ruby hash to a PDF Dictionary when inside a content stream" do
+    dict = Prawn::Core::PdfObject( {:foo  => :bar, 
+                              "baz" => [1,2,3], 
+                              :bang => {:a => "what", :b => [:you, :say] }}, true )     
+
+    res = PDF::Inspector.parse(dict)           
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 
     res[:foo].should == :bar
     res[:baz].should == [1,2,3]
@@ -77,6 +182,7 @@ describe "PDF Object Serialization" do
   end      
 
   it "should convert a Ruby hash to a PDF Dictionary when outside a content stream" do
+<<<<<<< HEAD
     dict = Prawn::PdfObject( {:foo  => :bar, 
                               "baz"  => [1,2,3], 
                               :bang => {:a => "what", :b => [:you, :say] }}, false )
@@ -86,17 +192,45 @@ describe "PDF Object Serialization" do
     res[:foo].should == :bar
     res[:baz].should == [1,2,3]
     res[:bang].should == { :a => "\xFE\xFF\x00w\x00h\x00a\x00t", :b => [:you, :say] }
+=======
+    what = "\xFE\xFF" + "what".unpack("U*").pack("n*")
+    dict = Prawn::Core::PdfObject( {:foo  => :bar, 
+                              "baz" => [1,2,3], 
+                              :bang => {:a => "what", :b => [:you, :say] }}, false )
+
+    res = PDF::Inspector.parse(dict)           
+
+    res[:foo].should == :bar
+    res[:baz].should == [1,2,3]
+    res[:bang].should == { :a => what, :b => [:you, :say] }
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 
   end      
   
   it "should not allow keys other than strings or symbols for PDF dicts" do
+<<<<<<< HEAD
     lambda { Prawn::PdfObject(:foo => :bar, :baz => :bang, 1 => 4) }.
+=======
+    lambda { Prawn::Core::PdfObject(:foo => :bar, :baz => :bang, 1 => 4) }.
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
       should.raise(Prawn::Errors::FailedObjectConversion) 
   end  
   
   it "should convert a Prawn::Reference to a PDF indirect object reference" do
-    ref = Prawn::Reference(1,true)
-    Prawn::PdfObject(ref).should == ref.to_s
+    ref = Prawn::Core::Reference(1,true)
+    Prawn::Core::PdfObject(ref).should == ref.to_s
   end
+<<<<<<< HEAD
   
+=======
+
+  it "should convert a NameTree::Node to a PDF hash" do
+    node = Prawn::Core::NameTree::Node.new(Prawn::Document.new, 10)
+    node.add "hello", 1.0
+    node.add "world", 2.0
+    data = Prawn::Core::PdfObject(node)
+    res = PDF::Inspector.parse(data)
+    res.should == {:Names => ["hello", 1.0, "world", 2.0]}
+  end
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db
 end

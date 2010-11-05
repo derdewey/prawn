@@ -1,7 +1,15 @@
 # encoding: utf-8
+<<<<<<< HEAD:examples/line.rb
 
 $LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
 require "prawn"
+=======
+#
+# The very first Prawn example.  Here for nostalgia's sake.
+#
+require File.expand_path(File.join(File.dirname(__FILE__),
+                                   %w[.. example_helper]))
+>>>>>>> cd81f1e61bc5acf842b52f9e1abbbd5795edb5db:examples/graphics/line.rb
  
 pdf = Prawn::Document.new   
 pdf.line_width = 10    
